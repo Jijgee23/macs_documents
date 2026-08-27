@@ -1,0 +1,18 @@
+[Unit]
+Description=MACS ERP Docs (Next.js)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=macsdocs
+WorkingDirectory=/srv/macs-docs
+EnvironmentFile=/srv/macs-docs/.env
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=5
+# graceful shutdown window recommended by Next.js self-hosting docs (after()/streaming drain)
+TimeoutStopSec=30
+KillSignal=SIGTERM
+
+[Install]
+WantedBy=multi-user.target

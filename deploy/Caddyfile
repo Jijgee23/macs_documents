@@ -1,0 +1,6 @@
+docs.macs.mn {
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Accel-Buffering "no"
+	}
+	encode gzip zstd
+}

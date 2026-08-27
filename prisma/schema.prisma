@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Module {
+  id       String    @id @default(cuid())
+  title    String
+  order    Int
+  sections Section[]
+}
+
+model Section {
+  id        String   @id
+  title     String
+  body      String?
+  order     Int
+  moduleId  String
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Section? @relation("SectionChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Section[] @relation("SectionChildren")
+  updatedAt DateTime @updatedAt
+
+  @@index([moduleId])
+  @@index([parentId])
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Settings {
+  id        String   @id @default("singleton")
+  chatModel String   @default("claude-opus-5")
+  updatedAt DateTime @updatedAt
+}
