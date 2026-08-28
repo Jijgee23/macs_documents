@@ -10,6 +10,19 @@ export const CHAT_MODEL_OPTIONS = [
 
 const DEFAULT_CHAT_MODEL = "claude-opus-5";
 
+export const DEFAULT_SYSTEM_PROMPT = `Та бол "MACS ERP / MacsXE4 / MACS POS" системийн монгол хэл дээрх баримт бичгийн AI туслах.
+Зөвхөн хэрэглэгчийн зурвасын өмнө өгөгдсөн "Холбогдох баримт" хэсэгт байгаа мэдээллийг үндэслэн хариулна уу.
+Хэрэв асуултад хариулах мэдээлэл холбогдох баримтад байхгүй бол мэдэхгүй гэдгээ шууд хэлж, зохиомол мэдээлэл бүү өг.
+Хариултаа товч бөгөөд ойлгомжтой монгол хэлээр бич.`;
+
+export const DEFAULT_RULES = "";
+
+export const DEFAULT_UNAVAILABLE_MESSAGE =
+  "Уучлаарай, AI туслах одоогоор боломжгүй байна. Серверийн ANTHROPIC_API_KEY тохируулагдсан эсэхийг шалгана уу.";
+
+export const DEFAULT_ERROR_MESSAGE =
+  "Уучлаарай, AI туслах одоогоор боломжгүй байна. Түр хүлээгээд дахин оролдоно уу.";
+
 export async function getSettings() {
   return db.settings.upsert({
     where: { id: "singleton" },
@@ -18,7 +31,13 @@ export async function getSettings() {
   });
 }
 
-export async function getChatModel(): Promise<string> {
+export async function getChatSettings() {
   const settings = await getSettings();
-  return settings.chatModel;
+  return {
+    chatModel: settings.chatModel,
+    systemPrompt: settings.systemPrompt || DEFAULT_SYSTEM_PROMPT,
+    rules: settings.rules ?? DEFAULT_RULES,
+    unavailableMessage: settings.unavailableMessage || DEFAULT_UNAVAILABLE_MESSAGE,
+    errorMessage: settings.errorMessage || DEFAULT_ERROR_MESSAGE,
+  };
 }

@@ -22,7 +22,7 @@ export default async function NewSectionPage({
   const action = saveSectionAction.bind(null, true);
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full">
       <h1 className="mb-6 text-xl font-semibold">Шинэ хэсэг</h1>
       {error && (
         <p className="mb-4 p-3 text-sm" style={errorBannerStyle}>

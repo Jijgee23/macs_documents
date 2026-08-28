@@ -7,6 +7,10 @@ import { db } from "@/lib/db";
 import { getSession, requireAdmin, verifyPassword } from "@/lib/auth";
 import { CHAT_MODEL_OPTIONS } from "@/lib/settings";
 
+function toastRedirect(path: string, message: string): never {
+  redirect(`${path}?toast=${encodeURIComponent(message)}`);
+}
+
 export async function loginAction(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
@@ -88,14 +92,15 @@ export async function saveSectionAction(isNew: boolean, formData: FormData) {
 
   revalidatePath(`/${id}`);
   revalidatePath("/admin");
-  redirect("/admin");
+  toastRedirect("/admin", isNew ? "Хэсэг нэмэгдлээ" : "Хэсэг хадгалагдлаа");
 }
 
 export async function deleteSectionAction(id: string) {
   await requireAdmin();
-  await db.section.delete({ where: { id } });
+  const deleted = await db.section.delete({ where: { id } });
   revalidatePath(`/${id}`);
   revalidatePath("/admin");
+  toastRedirect("/admin", `"${deleted.title}" хэсэг устгагдлаа`);
 }
 
 const moduleSchema = z.object({
@@ -115,6 +120,7 @@ export async function createModuleAction(formData: FormData) {
   });
   revalidatePath("/admin/modules");
   revalidatePath("/");
+  toastRedirect("/admin/modules", `"${parsed.data.title}" модуль нэмэгдлээ`);
 }
 
 export async function renameModuleAction(id: string, formData: FormData) {
@@ -126,13 +132,15 @@ export async function renameModuleAction(id: string, formData: FormData) {
   await db.module.update({ where: { id }, data: { title: parsed.data.title } });
   revalidatePath("/admin/modules");
   revalidatePath("/");
+  toastRedirect("/admin/modules", "Модуль хадгалагдлаа");
 }
 
 export async function deleteModuleAction(id: string) {
   await requireAdmin();
-  await db.module.delete({ where: { id } });
+  const deleted = await db.module.delete({ where: { id } });
   revalidatePath("/admin/modules");
   revalidatePath("/");
+  toastRedirect("/admin/modules", `"${deleted.title}" модуль устгагдлаа`);
 }
 
 export async function moveModuleAction(id: string, direction: "up" | "down") {
@@ -171,11 +179,19 @@ export async function saveSettingsAction(formData: FormData) {
     redirect(`/admin/settings?error=${encodeURIComponent("Буруу модель сонголт")}`);
   }
 
+  const systemPrompt = String(formData.get("systemPrompt") ?? "").trim() || null;
+  const rules = String(formData.get("rules") ?? "").trim() || null;
+  const unavailableMessage = String(formData.get("unavailableMessage") ?? "").trim() || null;
+  const errorMessage = String(formData.get("errorMessage") ?? "").trim() || null;
+
+  const data = { chatModel, systemPrompt, rules, unavailableMessage, errorMessage };
+
   await db.settings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", chatModel },
-    update: { chatModel },
+    create: { id: "singleton", ...data },
+    update: data,
   });
 
   revalidatePath("/admin/settings");
+  toastRedirect("/admin/settings", "Тохиргоо хадгалагдлаа");
 }

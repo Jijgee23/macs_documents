@@ -37,7 +37,11 @@ model AdminUser {
 }
 
 model Settings {
-  id        String   @id @default("singleton")
-  chatModel String   @default("claude-opus-5")
-  updatedAt DateTime @updatedAt
+  id                 String   @id @default("singleton")
+  chatModel          String   @default("claude-opus-5")
+  systemPrompt       String?
+  rules              String?
+  unavailableMessage String?
+  errorMessage       String?
+  updatedAt          DateTime @updatedAt
 }

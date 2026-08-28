@@ -32,7 +32,7 @@ export default async function EditSectionPage({
   const deleteAction = deleteSectionAction.bind(null, id);
 
   return (
-    <div className="max-w-4xl">
+    <div className="w-full">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold">
           Хэсэг засах — <span className="font-mono text-base" style={mutedStyle}>{section.id}</span>

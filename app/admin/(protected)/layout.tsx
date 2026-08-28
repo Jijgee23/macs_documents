@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth";
 import { logoutAction } from "@/lib/actions";
 import { Logo } from "@/components/Logo";
+import { ToastHost } from "@/components/admin/ToastHost";
 
 const NAV_LINKS = [
   { href: "/admin", label: "Хэсгүүд" },
@@ -64,6 +66,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
       <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      <Suspense fallback={null}>
+        <ToastHost />
+      </Suspense>
     </div>
   );
 }
