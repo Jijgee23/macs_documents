@@ -24,7 +24,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: settings.unavailableMessage }, { status: 503 });
   }
 
-  const matches = await getRagContext(message, 4);
+  const client = new Anthropic({ apiKey });
+
+  const matches = await getRagContext(message, 4, client);
   const context = matches.length
     ? matches.map((m) => `### ${m.title}\n${m.body}`).join("\n\n---\n\n")
     : "(Холбогдох баримт олдсонгүй)";
@@ -32,8 +34,6 @@ export async function POST(request: NextRequest) {
   const system = settings.rules
     ? `${settings.systemPrompt}\n\n${settings.rules}`
     : settings.systemPrompt;
-
-  const client = new Anthropic({ apiKey });
 
   try {
     const response = await client.messages.create({
