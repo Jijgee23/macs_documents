@@ -45,3 +45,53 @@ model Settings {
   errorMessage       String?
   updatedAt          DateTime @updatedAt
 }
+
+/** Follow-up state for inquiries submitted from macs.mn. */
+enum RequestStatus {
+  NEW
+  CONTACTED
+  CLOSED
+}
+
+/** Price-quote request from macs.mn/une-sanal (POST /api/site/quote). */
+model QuoteRequest {
+  id        String        @id @default(cuid())
+  name      String?
+  company   String?
+  email     String
+  phone     String
+  /** Ids from QUOTE_PRODUCTS in lib/inquiries.ts */
+  products  String[]
+  message   String?
+  status    RequestStatus @default(NEW)
+  note      String?
+  /** Site language the request came from: "mn" | "en" */
+  locale    String        @default("mn")
+  ip        String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([ip, createdAt])
+}
+
+/** General contact message from macs.mn/holboo-barih (POST /api/site/contact). */
+model ContactMessage {
+  id        String        @id @default(cuid())
+  name      String?
+  email     String
+  phone     String?
+  /** One of CONTACT_TOPICS in lib/inquiries.ts */
+  topic     String
+  message   String
+  status    RequestStatus @default(NEW)
+  note      String?
+  /** Site language the message came from: "mn" | "en" */
+  locale    String        @default("mn")
+  ip        String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([ip, createdAt])
+}
