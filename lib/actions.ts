@@ -195,39 +195,3 @@ export async function saveSettingsAction(formData: FormData) {
   revalidatePath("/admin/settings");
   toastRedirect("/admin/settings", "Тохиргоо хадгалагдлаа");
 }
-
-const inquiryUpdateSchema = z.object({
-  kind: z.enum(["quote", "contact"]),
-  id: z.string().min(1),
-  status: z.enum(["NEW", "CONTACTED", "CLOSED"]),
-  note: z
-    .string()
-    .trim()
-    .max(2000)
-    .transform((v) => v || null),
-});
-
-/** Status/note update for macs.mn quote requests and contact messages. */
-export async function updateInquiryAction(formData: FormData) {
-  await requireAdmin();
-
-  const parsed = inquiryUpdateSchema.safeParse({
-    kind: formData.get("kind"),
-    id: formData.get("id"),
-    status: formData.get("status"),
-    note: formData.get("note") ?? "",
-  });
-  if (!parsed.success) {
-    toastRedirect("/admin/requests", "Хадгалж чадсангүй");
-  }
-
-  const { kind, id, ...data } = parsed.data;
-  const path = kind === "quote" ? "/admin/requests" : "/admin/messages";
-  if (kind === "quote") {
-    await db.quoteRequest.update({ where: { id }, data });
-  } else {
-    await db.contactMessage.update({ where: { id }, data });
-  }
-  revalidatePath(path);
-  toastRedirect(path, "Хадгалагдлаа");
-}

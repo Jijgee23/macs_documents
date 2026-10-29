@@ -8,8 +8,6 @@ import { ToastHost } from "@/components/admin/ToastHost";
 const NAV_LINKS = [
   { href: "/admin", label: "Хэсгүүд" },
   { href: "/admin/modules", label: "Модулиуд" },
-  { href: "/admin/requests", label: "Үнийн санал" },
-  { href: "/admin/messages", label: "Санал хүсэлт" },
   { href: "/admin/settings", label: "Тохиргоо" },
 ];
 

@@ -33,18 +33,7 @@ ADMIN_PASSWORD=<real admin password>
 ANTHROPIC_API_KEY=<real Anthropic key — AI chat returns a friendly "unavailable" message if unset, doesn't crash>
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=<32+ random chars, openssl rand -base64 32>
 
-# macs.mn inquiries (POST /api/site/quote, /api/site/contact)
-SITE_API_KEY=<32+ random chars, openssl rand -hex 32 — same value in macs.mn's .env>
-DOCS_URL=https://docs.macs.mn
-SMTP_HOST=<infosystems.mn mail server>
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=<mailbox login>
-SMTP_PASS=<mailbox password>
-SMTP_FROM=MACS ERP <noreply@infosystems.mn>
-NOTIFY_TO=contact@infosystems.mn
 ```
-`SITE_API_KEY` is required for macs.mn's forms: without it the `/api/site/*` endpoints reject every request (401). Without SMTP the requests are still saved and listed at `/admin/requests` and `/admin/messages`; only the notification email is skipped. For port 465 set `SMTP_SECURE=true`.
 `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` must be pinned — without it, Server Action IDs rotate on every deploy/restart and in-flight form submissions during a rolling deploy will fail. The Claude model used for AI chat is admin-configurable at `/admin/settings` (stored in DB, not env) — no redeploy needed to change it.
 
 ## 4. systemd
