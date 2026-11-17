@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPrevNext, getSection } from "@/lib/content";
-import { getEmbedUrl } from "@/lib/video";
 import { FavoriteButton } from "@/components/FavoriteButton";
 
 export default async function SectionPage({
@@ -15,8 +14,6 @@ export default async function SectionPage({
   const [section, { prev, next }] = await Promise.all([getSection(id), getPrevNext(id)]);
 
   if (!section) notFound();
-
-  const embedUrl = section.videoUrl ? getEmbedUrl(section.videoUrl) : null;
 
   return (
     <div className="mx-auto max-w-[800px] pb-[60px]">
@@ -54,28 +51,6 @@ export default async function SectionPage({
       </div>
 
       <div className="px-6 py-7 md:px-9">
-        {section.videoUrl &&
-          (embedUrl ? (
-            <div
-              className="no-print mb-6 overflow-hidden"
-              style={{ aspectRatio: "16 / 9", borderRadius: 8, border: "1px solid var(--br)" }}
-            >
-              <iframe
-                src={embedUrl}
-                title={`${section.title} — видео`}
-                className="h-full w-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                loading="lazy"
-              />
-            </div>
-          ) : (
-            <p className="no-print mb-6 text-[14px]">
-              <a href={section.videoUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--badge-tx)" }}>
-                Видео үзэх ↗
-              </a>
-            </p>
-          ))}
         {section.body ? (
           <div className="doc-content">
             <ReactMarkdown
@@ -99,6 +74,25 @@ export default async function SectionPage({
               </li>
             ))}
           </ul>
+        )}
+        {section.videoUrl && (
+          <p className="no-print mt-8">
+            <a
+              href={section.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-[14px] font-semibold"
+              style={{
+                padding: "8px 16px",
+                borderRadius: 8,
+                background: "var(--badge)",
+                border: "1px solid var(--badge-br)",
+                color: "var(--badge-tx)",
+              }}
+            >
+              ▶ Заавар бичлэг үзэх
+            </a>
+          </p>
         )}
       </div>
 
