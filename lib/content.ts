@@ -134,6 +134,8 @@ export interface RagMatch {
   id: string;
   title: string;
   body: string;
+  /** Admin-only notes for the AI. Must never be sent to the client. */
+  aiNotes: string;
 }
 
 /** Word-overlap scoring (title matches weigh 3x) over all sections with content — small
@@ -148,8 +150,8 @@ export interface RagMatch {
  * words with the query (e.g. "ажилтан бүртгэх" → "Ажилтны анкет"). */
 export async function getRagContext(query: string, limit = 4, client?: Anthropic): Promise<RagMatch[]> {
   const sections = await db.section.findMany({
-    where: { body: { not: null } },
-    select: { id: true, title: true, body: true },
+    where: { OR: [{ body: { not: null } }, { aiNotes: { not: null } }] },
+    select: { id: true, title: true, body: true, aiNotes: true },
   });
 
   const [extraTerms, boostedIds] = client
@@ -169,7 +171,7 @@ export async function getRagContext(query: string, limit = 4, client?: Anthropic
   const scored = sections
     .map((s) => {
       const titleLower = s.title.toLowerCase();
-      const bodyLower = (s.body ?? "").toLowerCase();
+      const bodyLower = `${s.body ?? ""}\n${s.aiNotes ?? ""}`.toLowerCase();
       const titleTokens = new Set(titleLower.split(WORD_SPLIT_RE).filter(Boolean));
       const bodyTokens = new Set(bodyLower.split(WORD_SPLIT_RE).filter(Boolean));
 
@@ -181,12 +183,12 @@ export async function getRagContext(query: string, limit = 4, client?: Anthropic
         if (bodyLower.includes(w)) score += 1;
         else if (fuzzyIncludes(bodyTokens, w)) score += 0.5;
       }
-      return { id: s.id, title: s.title, body: s.body ?? "", score };
+      return { id: s.id, title: s.title, body: s.body ?? "", aiNotes: s.aiNotes ?? "", score };
     })
     .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  return scored.slice(0, limit).map(({ id, title, body }) => ({ id, title, body }));
+  return scored.slice(0, limit).map(({ id, title, body, aiNotes }) => ({ id, title, body, aiNotes }));
 }
 
 export interface FlatNavEntry {

@@ -44,6 +44,12 @@ const sectionSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "ID нь зөвхөн латин жижиг үсэг, тоо, зураас (-) агуулна"),
   title: z.string().min(1, "Гарчиг шаардлагатай"),
   body: z.string().optional(),
+  videoUrl: z
+    .string()
+    .trim()
+    .optional()
+    .refine((v) => !v || /^https?:\/\/\S+$/i.test(v), "Видео линк http:// эсвэл https:// -ээр эхэлсэн зөв URL байх ёстой"),
+  aiNotes: z.string().optional(),
   moduleId: z.string().min(1, "Модуль сонгоно уу"),
   parentId: z.string().optional(),
   order: z.coerce.number().int().default(0),
@@ -56,6 +62,8 @@ export async function saveSectionAction(isNew: boolean, formData: FormData) {
     id: String(formData.get("id") ?? ""),
     title: formData.get("title"),
     body: formData.get("body"),
+    videoUrl: formData.get("videoUrl") ?? undefined,
+    aiNotes: formData.get("aiNotes") ?? undefined,
     moduleId: formData.get("moduleId"),
     parentId: formData.get("parentId") || undefined,
     order: formData.get("order") ?? 0,
@@ -69,7 +77,8 @@ export async function saveSectionAction(isNew: boolean, formData: FormData) {
     redirect(`${backPath}?error=${encodeURIComponent(message)}`);
   }
 
-  const { id, title, body, moduleId, parentId, order } = parsed.data;
+  const { id, title, body, videoUrl, aiNotes, moduleId, parentId, order } = parsed.data;
+  const extra = { videoUrl: videoUrl || null, aiNotes: aiNotes?.trim() || null };
 
   if (parentId === id) {
     redirect(`${backPath}?error=${encodeURIComponent("Хэсэг өөрийгөө эцэг болгож чадахгүй")}`);
@@ -81,12 +90,12 @@ export async function saveSectionAction(isNew: boolean, formData: FormData) {
       redirect(`${backPath}?error=${encodeURIComponent("Энэ ID аль хэдийн байна")}`);
     }
     await db.section.create({
-      data: { id, title, body: body || null, moduleId, parentId: parentId || null, order },
+      data: { id, title, body: body || null, ...extra, moduleId, parentId: parentId || null, order },
     });
   } else {
     await db.section.update({
       where: { id },
-      data: { title, body: body || null, moduleId, parentId: parentId || null, order },
+      data: { title, body: body || null, ...extra, moduleId, parentId: parentId || null, order },
     });
   }
 

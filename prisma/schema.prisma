@@ -17,6 +17,8 @@ model Section {
   id        String   @id
   title     String
   body      String?
+  videoUrl  String?
+  aiNotes   String?
   order     Int
   moduleId  String
   module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
