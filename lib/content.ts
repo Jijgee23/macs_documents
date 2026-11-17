@@ -115,15 +115,21 @@ export async function selectRelevantSectionIds(
   }
 }
 
+/** Passed straight to client components, so select only what the nav renders — never
+ * whole Section rows (they carry admin-only `aiNotes`, and the full `body`). */
 export async function getNavTree() {
   return db.module.findMany({
     orderBy: { order: "asc" },
-    include: {
+    select: {
+      id: true,
+      title: true,
       sections: {
         where: { parentId: null },
         orderBy: { order: "asc" },
-        include: {
-          children: { orderBy: { order: "asc" } },
+        select: {
+          id: true,
+          title: true,
+          children: { orderBy: { order: "asc" }, select: { id: true, title: true } },
         },
       },
     },
@@ -218,13 +224,18 @@ export async function getPrevNext(id: string): Promise<{ prev: FlatNavEntry | nu
   };
 }
 
+/** Public page data. Deliberately excludes `aiNotes` (admin/AI only). */
 export async function getSection(id: string) {
   return db.section.findUnique({
     where: { id },
-    include: {
-      module: true,
-      parent: true,
-      children: { orderBy: { order: "asc" } },
+    select: {
+      id: true,
+      title: true,
+      body: true,
+      videoUrl: true,
+      module: { select: { title: true } },
+      parent: { select: { title: true } },
+      children: { orderBy: { order: "asc" }, select: { id: true, title: true } },
     },
   });
 }
