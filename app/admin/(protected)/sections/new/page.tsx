@@ -2,7 +2,8 @@ import { db } from "@/lib/db";
 import { saveSectionAction } from "@/lib/actions";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import { Select } from "@/components/admin/Select";
-import { errorBannerStyle, fieldStyle, primaryButtonStyle } from "@/components/admin/styles";
+import { Textarea } from "@/components/admin/Textarea";
+import { errorBannerStyle, fieldStyle, mutedStyle, primaryButtonStyle } from "@/components/admin/styles";
 
 export default async function NewSectionPage({
   searchParams,
@@ -74,6 +75,23 @@ export default async function NewSectionPage({
         <div>
           <label className="mb-1 block text-sm font-medium">Агуулга (Markdown)</label>
           <MarkdownEditor name="body" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">Видео линк (YouTube / Vimeo, сонголт)</label>
+          <input
+            name="videoUrl"
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            className="mt-1 w-full px-3 py-2 outline-none"
+            style={fieldStyle}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium">AI-д зориулсан нэмэлт тайлбар (хэрэглэгчид харагдахгүй)</label>
+          <p className="mb-1 text-xs" style={mutedStyle}>
+            Зөвхөн AI туслах хариулахдаа ашиглана. Нийтийн хуудас болон хайлтад харагдахгүй.
+          </p>
+          <Textarea name="aiNotes" rows={5} />
         </div>
         <button type="submit" className="px-4 py-2 text-sm font-medium" style={primaryButtonStyle}>
           Хадгалах

@@ -28,7 +28,13 @@ export async function POST(request: NextRequest) {
 
   const matches = await getRagContext(message, 4, client);
   const context = matches.length
-    ? matches.map((m) => `### ${m.title}\n${m.body}`).join("\n\n---\n\n")
+    ? matches
+        .map(
+          (m) =>
+            `### ${m.title}\n${m.body}` +
+            (m.aiNotes ? `\n\n[Админы нэмэлт тайлбар — дотоод заавар, хэрэглэгчид шууд ишлэж харуулахгүй]\n${m.aiNotes}` : "")
+        )
+        .join("\n\n---\n\n")
     : "(Холбогдох баримт олдсонгүй)";
 
   const system = settings.rules
