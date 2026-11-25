@@ -1,49 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { unlockDocsAction } from "@/lib/actions";
 import { Logo } from "@/components/Logo";
 
-const UNLOCK_KEY = "macs-docs-unlocked";
-const SITE_PASSWORD = "macs2026";
-
-export function PasswordGate({ children }: { children: React.ReactNode }) {
-  const [unlocked, setUnlocked] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem(UNLOCK_KEY) === "1") {
-        // Reads sessionStorage (unavailable during SSR) — post-mount sync is unavoidable here.
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setUnlocked(true);
-        return;
-      }
-    } catch {}
-
-    try {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("unlock") === SITE_PASSWORD) {
-        sessionStorage.setItem(UNLOCK_KEY, "1");
-        setUnlocked(true);
-        const url = new URL(window.location.href);
-        url.searchParams.delete("unlock");
-        window.history.replaceState({}, "", url.toString());
-        return;
-      }
-    } catch {}
-
-    setUnlocked(false);
-  }, []);
-
-  if (unlocked === null) {
-    return <div style={{ background: "var(--bg)", height: "100dvh" }} />;
-  }
-  if (!unlocked) {
-    return <PasswordPrompt onUnlock={() => setUnlocked(true)} />;
-  }
-  return <>{children}</>;
-}
-
-function PasswordPrompt({ onUnlock }: { onUnlock: () => void }) {
+export function PasswordPrompt() {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const [value, setValue] = useState("");
   const [error, setError] = useState(false);
   const [shake, setShake] = useState(false);
@@ -54,18 +18,19 @@ function PasswordPrompt({ onUnlock }: { onUnlock: () => void }) {
   }, []);
 
   function submit() {
-    if (value === SITE_PASSWORD) {
-      try {
-        sessionStorage.setItem(UNLOCK_KEY, "1");
-      } catch {}
-      onUnlock();
-    } else {
-      setError(true);
-      setShake(true);
-      setTimeout(() => setShake(false), 400);
-      setValue("");
-      inputRef.current?.focus();
-    }
+    if (pending) return;
+    startTransition(async () => {
+      const ok = await unlockDocsAction(value);
+      if (ok) {
+        router.refresh();
+      } else {
+        setError(true);
+        setShake(true);
+        setTimeout(() => setShake(false), 400);
+        setValue("");
+        inputRef.current?.focus();
+      }
+    });
   }
 
   return (
@@ -137,6 +102,7 @@ function PasswordPrompt({ onUnlock }: { onUnlock: () => void }) {
         <button
           type="button"
           onClick={submit}
+          disabled={pending}
           className="w-full text-sm font-semibold"
           style={{
             padding: "11px 14px",

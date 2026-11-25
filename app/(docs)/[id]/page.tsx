@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getPrevNext, getSection } from "@/lib/content";
+import { hasDocsAccess } from "@/lib/docs-access";
 import { FavoriteButton } from "@/components/FavoriteButton";
 
 export default async function SectionPage({
@@ -10,6 +11,7 @@ export default async function SectionPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  if (!(await hasDocsAccess())) return null;
   const { id } = await params;
   const [section, { prev, next }] = await Promise.all([getSection(id), getPrevNext(id)]);
 

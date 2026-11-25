@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import { hasDocsAccess } from "@/lib/docs-access";
 import type { NextRequest } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { getRagContext } from "@/lib/content";
 import { getChatSettings } from "@/lib/settings";
 
 export async function POST(request: NextRequest) {
+  if (!(await hasDocsAccess())) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   let body: { message?: unknown };
   try {
     body = await request.json();

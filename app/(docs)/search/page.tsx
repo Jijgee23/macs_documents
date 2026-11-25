@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { hasDocsAccess } from "@/lib/docs-access";
 import { searchSections } from "@/lib/content";
 
 export default async function SearchPage({
@@ -6,6 +7,7 @@ export default async function SearchPage({
 }: {
   searchParams: Promise<{ q?: string }>;
 }) {
+  if (!(await hasDocsAccess())) return null;
   const { q } = await searchParams;
   const results = q ? await searchSections(q) : [];
 

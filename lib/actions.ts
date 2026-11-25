@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { getSession, requireAdmin, verifyPassword } from "@/lib/auth";
+import { checkDocsPassword, grantDocsAccess } from "@/lib/docs-access";
 import { CHAT_MODEL_OPTIONS } from "@/lib/settings";
 
 function toastRedirect(path: string, message: string): never {
@@ -29,6 +30,12 @@ export async function loginAction(formData: FormData) {
   await session.save();
 
   redirect("/admin");
+}
+
+export async function unlockDocsAction(password: string): Promise<boolean> {
+  if (typeof password !== "string" || !checkDocsPassword(password)) return false;
+  await grantDocsAccess();
+  return true;
 }
 
 export async function logoutAction() {
