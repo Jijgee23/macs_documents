@@ -7,7 +7,16 @@ import type { NextRequest } from "next/server";
  * per Next.js's DAL guidance: proxy alone is not sufficient defense.
  */
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, searchParams } = request.nextUrl;
+
+  // Legacy "?unlock=<password>" links: hand off to /api/unlock, which verifies the
+  // password server-side and sets the cookie (a proxy can't write the iron-session).
+  if (searchParams.has("unlock") && !pathname.startsWith("/admin") && !pathname.startsWith("/api")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/api/unlock";
+    url.search = `?key=${encodeURIComponent(searchParams.get("unlock") ?? "")}&to=${encodeURIComponent(pathname)}`;
+    return NextResponse.redirect(url);
+  }
 
   const isLoginPage = pathname === "/admin/login";
   const hasSession = request.cookies.has("macs_docs_admin_session");
@@ -20,5 +29,8 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    { source: "/((?!_next/|api/|admin).*)", has: [{ type: "query", key: "unlock" }] },
+  ],
 };
