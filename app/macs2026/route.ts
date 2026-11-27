@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { grantDocsAccess } from "@/lib/docs-access";
 
 // Legacy magic path: visiting /macs2026 unlocks the docs and goes to the overview.
-export async function GET(request: NextRequest) {
+// Redirect with a relative Location: behind the reverse proxy request.url points at
+// localhost:3000, so an absolute URL built from it would leave the docs.macs.mn origin.
+export async function GET() {
   await grantDocsAccess();
-  return NextResponse.redirect(new URL("/overview", request.url));
+  return new Response(null, { status: 307, headers: { Location: "/overview" } });
 }
